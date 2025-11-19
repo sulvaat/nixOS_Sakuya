@@ -1,0 +1,24 @@
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  # CORRECTED LINE: Combine all inputs into the function's argument set
+  outputs = { self, nixpkgs, stylix, ... }: { 
+
+    nixosConfigurations.Sakuya = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux"; # You should explicitly define the system architecture here
+      modules = [
+        # It's better practice to place experimental-features in the flake root's settings
+        { nix.settings.experimental-features = [ "nix-command" "flakes" ]; }
+        stylix.nixosModules.stylix
+        ./configuration.nix
+      ];
+    };
+  };
+
+}
