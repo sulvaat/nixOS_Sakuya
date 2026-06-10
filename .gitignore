@@ -1,0 +1,21 @@
+# SSH keys / secrets — never commit these
+gitssh
+gitssh.pub
+*.pem
+*.key
+id_*
+*_rsa
+*_ed25519
+
+# Editor / config backups
+*.bak
+*.bk
+*.bak-*
+*.backup
+*~
+*.swp
+*.swo
+
+# Nix build outputs
+result
+result-*
