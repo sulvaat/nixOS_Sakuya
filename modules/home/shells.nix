@@ -49,6 +49,7 @@
     enable = true;
     settings = {
       add_newline = false;
+      scan_timeout = 50;
       aws.disabled = true;
       gcloud.disabled = true;
       line_break.disabled = true;
