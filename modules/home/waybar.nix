@@ -62,8 +62,16 @@ let
   # context in its input), then graft the real windows-helper path onto the
   # `@niri_windows@` placeholder in the custom/windows module.
   barData = builtins.fromJSON (builtins.readFile ./waybar/config.json);
+  swaync = pkgs.swaynotificationcenter;
   barSettings = barData // {
     "custom/windows" = barData."custom/windows" // { exec = "${niriWindows}"; };
+    # Point the swaync module at the real swaync-client (store path can't live in
+    # the JSON pre-fromJSON, so graft it on here like custom/windows).
+    "custom/swaync" = barData."custom/swaync" // {
+      exec = "${swaync}/bin/swaync-client -swb";
+      on-click = "${swaync}/bin/swaync-client -t -sw";
+      on-click-right = "${swaync}/bin/swaync-client -d -sw";
+    };
   };
 in
 {

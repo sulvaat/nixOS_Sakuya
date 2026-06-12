@@ -7,6 +7,25 @@
     "format": "  {usage}%",
     "interval": 5
   },
+  "custom/swaync": {
+    "escape": true,
+    "exec": "swaync-client -swb",
+    "format": "{icon} {}",
+    "format-icons": {
+      "dnd-inhibited-none": "󰂝",
+      "dnd-inhibited-notification": "󰂛",
+      "dnd-none": "󰂝",
+      "dnd-notification": "󰂛",
+      "inhibited-none": "󰂞",
+      "inhibited-notification": "󰨡",
+      "none": "󰂞",
+      "notification": "󰨡"
+    },
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "return-type": "json",
+    "tooltip": false
+  },
   "custom/windows": {
     "exec": "@niri_windows@",
     "format": "  {}",
@@ -18,6 +37,13 @@
     "interval": 30,
     "path": "/"
   },
+  "group/timebell": {
+    "orientation": "horizontal",
+    "modules": [
+      "clock",
+      "custom/swaync"
+    ]
+  },
   "height": 30,
   "layer": "top",
   "margin-left": 12,
@@ -28,7 +54,7 @@
     "interval": 5
   },
   "modules-center": [
-    "clock"
+    "group/timebell"
   ],
   "modules-left": [
     "niri/workspaces",

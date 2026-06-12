@@ -12,7 +12,7 @@ window#waybar {
 /* Shared pill style */
 #workspaces,
 #custom-windows,
-#clock,
+#timebell,
 #pulseaudio,
 #memory,
 #cpu,
@@ -23,6 +23,19 @@ window#waybar {
   padding: 2px 14px;
   margin: 4px 4px;
   border-radius: 14px;
+}
+
+/* Center pill is a group (clock + notification bell). The group box owns the
+   pill background/rounding; the two inner modules are transparent so they read
+   as one continuous box. The group's base00 background shows through the small
+   inter-module gap, so there's no seam. */
+#timebell { padding: 0 6px; }
+#timebell #clock,
+#timebell #custom-swaync {
+  background: transparent;
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 0;
 }
 
 /* Workspaces: pill wrapper with inner buttons */
@@ -69,3 +82,23 @@ window#waybar {
 #cpu            { color: @base0E@; }
 #disk           { color: @base09@; }
 #tray           { color: @base05@; }
+/* Notification bell (lives inside the center pill):
+   - idle: bright cyan (base0C) so it stands out against the grey clock
+   - DnD, nothing waiting: accent purple (base0E)
+   - notifications waiting: flash tokyo-midnight orange (base09) to grab the eye */
+#custom-swaync                      { color: @base0C@; }
+#custom-swaync.dnd-none,
+#custom-swaync.dnd-inhibited-none   { color: @base0E@; }
+#custom-swaync.notification,
+#custom-swaync.dnd-notification,
+#custom-swaync.inhibited-notification {
+  color: @base09@;
+  animation: notify-flash 1s ease-in-out infinite alternate;
+}
+
+/* Flash: pulse the bell between full tokyo orange and a dimmed orange so it
+   blinks for attention without changing the pill background. */
+@keyframes notify-flash {
+  0%   { color: @base09@; }
+  100% { color: shade(@base09@, 0.5); }
+}

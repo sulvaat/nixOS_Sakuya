@@ -10,7 +10,7 @@ theming.
 | | |
 |---|---|
 | **Compositor** | [Niri](https://github.com/YaLTeR/niri) (Wayland, scrollable-tiling) |
-| **Bar / launcher / notifications** | Waybar · Fuzzel · Mako |
+| **Bar / launcher / notifications** | Waybar · Fuzzel · SwayNC |
 | **Wallpaper** | swww (via an `awww` compatibility shim) + Waypaper |
 | **Theme** | Stylix — Tokyo City Dark, JetBrainsMono Nerd Font |
 | **Shell** | Fish + Starship |
@@ -51,7 +51,7 @@ imports and a few globals.
         ├── packages.nix       #   per-user packages
         ├── niri.nix           #   Niri config + swww startup helpers
         ├── waybar.nix         #   Waybar config + window-list helper
-        ├── services.nix       #   Flameshot, Mako, swayidle, KDE Connect
+        ├── services.nix       #   Flameshot, SwayNC, swayidle, KDE Connect
         ├── theming.nix        #   GTK theme/icons/cursor
         ├── shells.nix         #   Fish, Bash, Starship
         └── programs.nix       #   Fuzzel, Kitty, Ghostty, Git, Yazi, Zoxide
@@ -89,6 +89,15 @@ Handy shell aliases defined in the config:
 
 ### 2026-06-12
 
+- **Notification bell moved into the clock pill.** The SwayNC bell now lives
+  inside the centered clock pill via a Waybar `group/timebell` (the two modules
+  share one continuous rounded box). It reads bright cyan when idle, accent
+  purple for Do-Not-Disturb, and flashes Tokyo-orange once a second when
+  notifications are waiting — replacing the old, easy-to-miss far-right bell.
+- **SwayNC drawer centered.** The control center now opens as a centered
+  slide-down drawer (`control-center-positionX/Y = center/top`, 8px below the
+  bar) and popup toasts slide down from the top-center, all anchored under the
+  centered bell instead of the old right-side panel.
 - **Niri & Waybar config extracted to data files.** The Niri KDL and Waybar
   settings/stylesheet now live in `modules/home/niri/config.kdl.tmpl`,
   `modules/home/waybar/config.json`, and `modules/home/waybar/style.css.tmpl`.
