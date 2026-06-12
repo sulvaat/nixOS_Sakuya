@@ -23,4 +23,11 @@
       gtk-application-prefer-dark-theme = 1;
     };
   };
+
+  # Advertise a dark color-scheme through the freedesktop appearance portal
+  # (served by xdg-desktop-portal-gtk). This is what Electron/Chromium, Qt6 and
+  # libadwaita apps query to decide dark vs light — gtk-application-prefer-dark
+  # alone doesn't reach them. Merges into the interface block the gtk module
+  # already populates.
+  dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 }
