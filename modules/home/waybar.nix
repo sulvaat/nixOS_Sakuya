@@ -1,5 +1,11 @@
 # Waybar status bar, plus the helper script that lists windows in the focused
 # Niri workspace.
+#
+# Bar settings live in ./waybar/config.json and the stylesheet in
+# ./waybar/style.css.tmpl as tool-editable data (edited by the `nirinator` TUI).
+# In the CSS template, Stylix colors are `@baseXX@` tokens; in the JSON, the
+# windows-helper path is the `@niri_windows@` token. Both are substituted below,
+# so the rendered output is unchanged.
 { config, pkgs, osConfig, lib, ... }:
 
 let
@@ -17,6 +23,21 @@ let
           | join("   ")
         '
   '';
+
+  colors = osConfig.lib.stylix.colors.withHashtag;
+  slots = [
+    "base00" "base01" "base02" "base03" "base04" "base05" "base06" "base07"
+    "base08" "base09" "base0A" "base0B" "base0C" "base0D" "base0E" "base0F"
+  ];
+  renderColors = builtins.replaceStrings (map (n: "@${n}@") slots) (map (n: colors.${n}) slots);
+
+  # Parse the tool-editable JSON as pure data (fromJSON forbids store-path
+  # context in its input), then graft the real windows-helper path onto the
+  # `@niri_windows@` placeholder in the custom/windows module.
+  barData = builtins.fromJSON (builtins.readFile ./waybar/config.json);
+  barSettings = barData // {
+    "custom/windows" = barData."custom/windows" // { exec = "${niriWindows}"; };
+  };
 in
 {
   programs.waybar = {
@@ -25,134 +46,8 @@ in
     # duplicate stacked bar).
     systemd.enable = false;
 
-    settings = {
-      mainBar = {
-        layer = "top";
-        position = "top";
-        height = 30;
-        spacing = 6;
-        margin-top = 6;
-        margin-left = 12;
-        margin-right = 12;
+    settings.mainBar = barSettings;
 
-        modules-left = [ "niri/workspaces" "custom/windows" ];
-        modules-center = [ "clock" ];
-        modules-right = [ "pulseaudio" "memory" "cpu" "disk" "tray" ];
-
-        "niri/workspaces" = {
-          format = "{icon}";
-          format-icons = {
-            active = "";
-            default = "";
-          };
-        };
-
-        "custom/windows" = {
-          exec = "${niriWindows}";
-          interval = 1;
-          format = "  {}";
-          max-length = 90;
-          tooltip = false;
-        };
-
-        clock = {
-          format = "  {:%a %d %b   %H:%M}";
-          tooltip-format = "<tt><big>{calendar}</big></tt>";
-        };
-
-        pulseaudio = {
-          format = "{icon}  {volume}%";
-          format-bluetooth = "  {volume}%";
-          format-muted = "  muted";
-          format-icons = {
-            default = [ "" "" "" ];
-          };
-          scroll-step = 5;
-          on-click = "pavucontrol";
-        };
-
-        memory = {
-          interval = 5;
-          format = "  {}%";
-        };
-
-        cpu = {
-          interval = 5;
-          format = "  {usage}%";
-        };
-
-        disk = {
-          interval = 30;
-          format = "  {percentage_used}%";
-          path = "/";
-        };
-
-        tray = {
-          icon-size = 18;
-          spacing = 8;
-        };
-      };
-    };
-
-    style = with osConfig.lib.stylix.colors.withHashtag; lib.mkForce ''
-      * {
-        font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono";
-        font-size: 14px;
-        min-height: 0;
-      }
-
-      /* Transparent bar so each module reads as a floating pill */
-      window#waybar {
-        background: transparent;
-      }
-
-      /* Shared pill style */
-      #workspaces,
-      #custom-windows,
-      #clock,
-      #pulseaudio,
-      #memory,
-      #cpu,
-      #disk,
-      #tray {
-        background: ${base00};
-        color: ${base05};
-        padding: 2px 14px;
-        margin: 4px 4px;
-        border-radius: 14px;
-      }
-
-      /* Workspaces: pill wrapper with inner buttons */
-      #workspaces {
-        padding: 2px 6px;
-      }
-      #workspaces button {
-        padding: 0 6px;
-        margin: 2px 1px;
-        color: ${base04};
-        background: transparent;
-        border-radius: 10px;
-      }
-      #workspaces button.active,
-      #workspaces button.focused {
-        color: ${base00};
-        background: ${base0D};
-      }
-      #workspaces button:hover {
-        background: ${base02};
-        color: ${base07};
-        box-shadow: inherit;
-        text-shadow: inherit;
-      }
-
-      /* Accent colors per module */
-      #custom-windows { color: ${base0C}; }
-      #clock          { color: ${base0A}; font-weight: bold; }
-      #pulseaudio     { color: ${base0D}; }
-      #memory         { color: ${base0B}; }
-      #cpu            { color: ${base0E}; }
-      #disk           { color: ${base09}; }
-      #tray           { color: ${base05}; }
-    '';
+    style = lib.mkForce (renderColors (builtins.readFile ./waybar/style.css.tmpl));
   };
 }

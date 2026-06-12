@@ -1,0 +1,58 @@
+* {
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono";
+  font-size: 14px;
+  min-height: 0;
+}
+
+/* Transparent bar so each module reads as a floating pill */
+window#waybar {
+  background: transparent;
+}
+
+/* Shared pill style */
+#workspaces,
+#custom-windows,
+#clock,
+#pulseaudio,
+#memory,
+#cpu,
+#disk,
+#tray {
+  background: @base00@;
+  color: @base05@;
+  padding: 2px 14px;
+  margin: 4px 4px;
+  border-radius: 14px;
+}
+
+/* Workspaces: pill wrapper with inner buttons */
+#workspaces {
+  padding: 2px 6px;
+}
+#workspaces button {
+  padding: 0 6px;
+  margin: 2px 1px;
+  color: @base04@;
+  background: transparent;
+  border-radius: 10px;
+}
+#workspaces button.active,
+#workspaces button.focused {
+  color: @base00@;
+  background: @base0D@;
+}
+#workspaces button:hover {
+  background: @base02@;
+  color: @base07@;
+  box-shadow: inherit;
+  text-shadow: inherit;
+}
+
+/* Accent colors per module */
+#custom-windows { color: @base0C@; }
+#clock          { color: @base04@; font-weight: bold; }
+#pulseaudio     { color: @base0D@; }
+#memory         { color: @base0B@; }
+#cpu            { color: @base0E@; }
+#disk           { color: @base09@; }
+#tray           { color: @base05@; }
