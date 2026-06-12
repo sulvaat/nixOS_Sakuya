@@ -89,6 +89,18 @@ Handy shell aliases defined in the config:
 
 ### 2026-06-12
 
+- **System defaults to dark everywhere.** `stylix.polarity` is pinned to `dark`
+  (was `either`) and the freedesktop appearance portal now reports
+  `color-scheme = prefer-dark` (`org/gnome/desktop/interface`), so GTK, Qt, and
+  Electron/Chromium/libadwaita apps all resolve dark instead of guessing.
+- **Teams for Linux keeps its dark theme.** A managed
+  `~/.config/teams-for-linux/config.json` sets `followSystemTheme = false`, which
+  unlocks the in-app theme picker and stops Teams reverting to light on launch.
+- **Notification bell renders again.** The Waybar SwayNC `format` was
+  `{icon} {}`, which Waybar 0.15 rejects for mixing manual and automatic
+  argument indexing — the whole field failed, so the bell was blank but still
+  clickable. Switched to `{icon} {text}`, added a clock glyph to the clock pill,
+  and gated waybar startup on the SwayNC daemon being ready to avoid a boot race.
 - **Notification bell moved into the clock pill.** The SwayNC bell now lives
   inside the centered clock pill via a Waybar `group/timebell` (the two modules
   share one continuous rounded box). It reads bright cyan when idle, accent
