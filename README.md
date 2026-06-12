@@ -89,6 +89,14 @@ Handy shell aliases defined in the config:
 
 ### 2026-06-12
 
+- **Now-playing widget in the SwayNC drawer.** Added the built-in `mpris` widget
+  (talks MPRIS over D-Bus directly — no playerctl) so media from Chrome,
+  Spotify, mpv, and the phone via KDE Connect shows with cover art and transport
+  controls; `autohide` keeps it out of the way when nothing is playing. The card
+  is compacted (smaller art, tighter padding) so it doesn't crowd out
+  notifications, since the control center scrolls as one unit. Also turned
+  `notification-grouping` off so each notification is its own card and the
+  fit-to-content drawer grows per item.
 - **SwayNC drawer restyled.** The control center is now a semi-transparent navy
   box (base00 mixed toward the blue accent at 0.8 opacity, mimicking the ghostty
   terminal) with a soft drop shadow, and it shrinks to fit the number of
