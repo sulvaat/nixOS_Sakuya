@@ -54,7 +54,12 @@
       notification-icon-size = 48;
       notification-body-image-height = 120;
       notification-body-image-width = 220;
-      widgets = [ "title" "dnd" "notifications" ];
+      # Show each notification as its own card rather than collapsing same-app
+      # notifications into one group. With grouping on (the default) the drawer
+      # looks like it "isn't growing" because repeats from one app stack into a
+      # single card; off, the fit-to-content drawer grows per notification.
+      notification-grouping = false;
+      widgets = [ "title" "mpris" "dnd" "notifications" ];
       widget-config = {
         title = {
           text = "Notifications";
@@ -62,6 +67,15 @@
           button-text = "Clear all";
         };
         dnd = { text = "Do not disturb"; };
+        # Now-playing card. autohide keeps it out of the drawer when nothing is
+        # playing (pairs with the fit-to-content height). No blacklist, so phone
+        # media via KDE Connect shows alongside desktop players (Chrome, Spotify,
+        # mpv). Talks MPRIS over D-Bus directly — no playerctl needed.
+        mpris = {
+          autohide = true;
+          image-size = 56;
+          image-radius = 10;
+        };
       };
     };
 
@@ -142,6 +156,28 @@
       }
       .widget-dnd > switch:checked { background: ${base0E}; }
       .widget-dnd > switch slider { background: ${base05}; border-radius: 10px; }
+
+      /* Now-playing (MPRIS) card. swaync's default styling (blurred album-art
+         background, 96px art, 16px overlay padding, 1.25rem title) makes the
+         card very tall and crowds out notifications — and since the whole
+         control center is ONE scroll area capped at the monitor height, a tall
+         card means only ~1 notification is visible. These user-priority
+         overrides compact the card (smaller art, tighter padding/margins,
+         smaller text) so ~3 notifications fit alongside it, while keeping the
+         card in place and the accent-blue control hover. Tune -gtk-icon-size /
+         padding to trade card size for visible notifications. */
+      .widget-mpris { margin: 4px; }
+      .widget-mpris .widget-mpris-player { margin: 6px 8px; }
+      .widget-mpris .widget-mpris-player .mpris-overlay { padding: 8px 12px; }
+      .widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-album-art {
+        -gtk-icon-size: 40px;
+      }
+      .widget-mpris-title    { color: ${base05}; font-weight: bold; font-size: 1.0rem; }
+      .widget-mpris-subtitle { color: ${base04}; font-size: 0.9rem; }
+      .widget-mpris .widget-mpris-player .mpris-overlay button:hover {
+        background: ${base0D};
+        color: ${base00};
+      }
     '';
   };
 
