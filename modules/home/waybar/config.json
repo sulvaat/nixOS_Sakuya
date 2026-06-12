@@ -1,6 +1,6 @@
 {
   "clock": {
-    "format": "  {:%a %d %b   %H:%M}",
+    "format": "󰅐  {:%a %d %b   %H:%M}",
     "tooltip-format": "<tt><big>{calendar}</big></tt>"
   },
   "cpu": {
@@ -10,7 +10,7 @@
   "custom/swaync": {
     "escape": true,
     "exec": "swaync-client -swb",
-    "format": "{icon} {}",
+    "format": "{icon} {text}",
     "format-icons": {
       "dnd-inhibited-none": "󰂝",
       "dnd-inhibited-notification": "󰂛",
