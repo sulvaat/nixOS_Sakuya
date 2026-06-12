@@ -89,6 +89,16 @@ Handy shell aliases defined in the config:
 
 ### 2026-06-12
 
+- **SwayNC drawer restyled.** The control center is now a semi-transparent navy
+  box (base00 mixed toward the blue accent at 0.8 opacity, mimicking the ghostty
+  terminal) with a soft drop shadow, and it shrinks to fit the number of
+  notifications instead of spanning the full screen height
+  (`fit-to-screen = false`, `control-center-height = -1`; scrolls once the
+  content exceeds the monitor).
+- **Silenced the `xorg.lndir` deprecation warning.** It comes from the pinned
+  home-manager (`modules/files.nix` still uses `pkgs.xorg.lndir`), so a small
+  overlay in `configuration.nix` shadows the deprecated alias with the real
+  `lndir`. Drop it once home-manager is updated past the rename.
 - **System defaults to dark everywhere.** `stylix.polarity` is pinned to `dark`
   (was `either`) and the freedesktop appearance portal now reports
   `color-scheme = prefer-dark` (`org/gnome/desktop/interface`), so GTK, Qt, and
