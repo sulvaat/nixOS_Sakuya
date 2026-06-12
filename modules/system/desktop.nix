@@ -36,7 +36,12 @@
   environment.sessionVariables = {
     #WLR_NO_HARDWARE_CURSORS = "1";
     NIXOS_OZONE_WL = "1";
+    EDITOR = "nvim";
+    VISUAL = "nvim";
   };
+
+  # Remove nano (enabled by default in NixOS); nvim is the editor.
+  programs.nano.enable = false;
 
   # System fonts.
   fonts.packages = with pkgs; [
