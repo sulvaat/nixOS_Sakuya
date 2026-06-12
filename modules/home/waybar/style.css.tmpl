@@ -47,6 +47,19 @@ window#waybar {
   box-shadow: inherit;
   text-shadow: inherit;
 }
+/* Urgent: a window on this workspace wants attention. Gentle pulse across three
+   muted shades of the accent purple (darkest -> mid -> base0E), never brighter
+   than base0E itself. shade() keeps it deriving from the theme color. */
+@keyframes urgent-pulse {
+  0%   { background-color: shade(@base0E@, 0.55); }
+  50%  { background-color: shade(@base0E@, 0.78); }
+  100% { background-color: @base0E@; }
+}
+#workspaces button.urgent {
+  color: @base07@;
+  background-color: shade(@base0E@, 0.7);
+  animation: urgent-pulse 2.4s ease-in-out infinite alternate;
+}
 
 /* Accent colors per module */
 #custom-windows { color: @base0C@; }

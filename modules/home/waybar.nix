@@ -9,8 +9,20 @@
 { config, pkgs, osConfig, lib, ... }:
 
 let
-  # Lists the titles of every window in the currently-focused niri workspace,
-  # emitted as a single space-separated line for the waybar custom module.
+  # Lists the windows of the currently-focused niri workspace as a single
+  # Pango-markup line for the waybar custom module.
+  #   * Tiled windows come first, in on-screen order (sorted by
+  #     layout.pos_in_scrolling_layout = [column, row], left->right, top->bottom).
+  #   * Floating windows follow, in spawn order (ascending id), each prefixed
+  #     with a small square marker.
+  #   * The focused window is a bold rounded accent pill.
+  #   * An urgent (attention-requesting) unfocused window is bold accent-purple
+  #     with a ringing-bell prefix, matching the urgent-workspace styling.
+  #   * Everything else is dimmed. Titles are XML-escaped so stray & < > don't
+  #     break the markup.
+  # Non-ASCII glyphs are literal (codepoints verified present in the font):
+  #   … = ellipsis   ▪ = floating square   󰂜 = bell (ring, U+F009C)
+  #    /  = powerline left/right half-circle pill caps.
   niriWindows = pkgs.writeShellScript "waybar-niri-windows" ''
     ws=$(${pkgs.niri}/bin/niri msg --json workspaces \
       | ${pkgs.jq}/bin/jq '[.[] | select(.is_focused)][0].id')
@@ -18,8 +30,23 @@ let
     [ "$ws" = "null" ] && exit 0
     ${pkgs.niri}/bin/niri msg --json windows \
       | ${pkgs.jq}/bin/jq -r --argjson ws "$ws" '
-          [ .[] | select(.workspace_id == $ws) | (.title // .app_id // "window") ]
-          | map(if (. | length) > 28 then (.[0:27] + "…") else . end)
+          def esc: gsub("&";"&amp;") | gsub("<";"&lt;") | gsub(">";"&gt;");
+          [ .[] | select(.workspace_id == $ws) ] as $all
+          | ([ $all[] | select(.is_floating == false) ]
+             | sort_by(.layout.pos_in_scrolling_layout)) as $tiled
+          | ([ $all[] | select(.is_floating == true) ]
+             | sort_by(.id)) as $floating
+          | [ ($tiled + $floating)[]
+              | (.title // .app_id // "window") as $raw
+              | ($raw | if (length > 28) then (.[0:27] + "…") else . end | esc) as $t
+              | (if .is_floating then "▪ " + $t else $t end) as $label
+              | if .is_focused
+                then "<span foreground=\"${colors.base0D}\"></span><span background=\"${colors.base0D}\" foreground=\"${colors.base00}\"><b>" + $label + "</b></span><span foreground=\"${colors.base0D}\"></span>"
+                elif .is_urgent
+                then "<span foreground=\"${colors.base0E}\"><b>󰂜 " + $label + "</b></span>"
+                else "<span foreground=\"${colors.base04}\">" + $label + "</span>"
+                end
+            ]
           | join("   ")
         '
   '';
