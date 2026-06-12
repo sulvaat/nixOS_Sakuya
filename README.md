@@ -77,12 +77,34 @@ Handy shell aliases defined in the config:
 |-------|--------|
 | `rb`  | `cd /etc/nixos && sudo nixos-rebuild switch --flake .` |
 | `rbu` | same, with `--upgrade` |
+| `gc`  | cleanup: keep 3 newest system generations, collect garbage, refresh boot menu |
 | `vc`  | edit `configuration.nix` |
 | `vh`  | edit `home.nix` |
 | `ns`  | `nix search nixpkgs` |
 
 > A `warning: Git tree '/etc/nixos' is dirty` during a rebuild just means there
 > are uncommitted changes — it's harmless. Commit when the build looks good.
+
+## Changelog
+
+### 2026-06-12
+
+- **Niri & Waybar config extracted to data files.** The Niri KDL and Waybar
+  settings/stylesheet now live in `modules/home/niri/config.kdl.tmpl`,
+  `modules/home/waybar/config.json`, and `modules/home/waybar/style.css.tmpl`.
+  Nix renders them, substituting `@baseXX@` Stylix color tokens and dynamic
+  store-path tokens at build time, so the rendered output is unchanged. Also
+  generates `~/.config/nirinator/palette.json`. This backs the in-progress
+  `nirinator` config TUI while keeping these files hand-editable.
+- **Niri:** `Mod+T` toggles the focused window between tiling and floating.
+- **Waybar window list:** the focused window is a bold rounded accent pill;
+  windows are ordered to match the on-screen tiling (then floating windows in
+  spawn order, marked with `▪`); a window requesting attention shows a bell in
+  accent purple and its workspace pulses through three muted purple shades.
+- **Waybar status:** added Nerd Font icons for volume / memory / cpu / disk,
+  numeric workspace labels, and removed the `custom/windows` `max-length` that
+  was counting Pango markup and truncating the pill.
+- **Shell:** added the `gc` cleanup alias (see above).
 
 ## Notes
 
