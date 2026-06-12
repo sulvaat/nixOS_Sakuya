@@ -34,7 +34,43 @@
 
   programs.kitty.enable = true;
   programs.git.enable = true;
-  programs.ghostty.enable = true;
+
+  # Ghostty terminal. These settings were previously hand-edited in
+  # ~/.config/ghostty/config, which drifted from this repo. Keep all changes
+  # HERE so home-manager owns the file (it writes ~/.config/ghostty/config).
+  programs.ghostty = {
+    enable = true;
+    settings = {
+      # --- Window & Layout ---
+      # Remove the native titlebar/borders so Niri handles window styling.
+      window-decoration = "none";
+      # Center text when the window is resized.
+      window-padding-balance = true;
+
+      # --- Typography ---
+      font-family = "JetBrainsMono Nerd Font";
+      font-size = 11;
+
+      # --- Colors & Aesthetics ---
+      theme = "catppuccin-macchiato";
+
+      # --- Transparency ---
+      # background-opacity = 1 is fully opaque; lower it (e.g. 0.92) to bring
+      # back translucency. alpha-blending controls how the blend is computed.
+      alpha-blending = "linear-corrected";
+      background-opacity = 0.8;
+      # Frosted-glass blur behind the window (only visible when opacity < 1).
+      background-blur = 50;
+
+      # --- UI Elements ---
+      cursor-style = "bar";
+      # Hide the mouse cursor while typing.
+      mouse-hide-while-typing = true;
+
+      # Send ESC + CR on Shift+Enter.
+      keybind = [ "shift+enter=text:\\x1b\\r" ];
+    };
+  };
 
   programs.yazi = {
     enable = true;

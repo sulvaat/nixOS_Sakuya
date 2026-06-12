@@ -76,9 +76,13 @@ in
         }
     }
 
-    // --- Window Rules (Handles Translucency correctly) ---
+    // --- Window Rules ---
+    // By default niri draws a solid rectangle (in the focus-ring/border color)
+    // BEHIND each focused window so semitransparent apps have a backdrop. That
+    // backdrop replaced the wallpaper behind focused transparent terminals with
+    // a flat slate-blue fill. Disabling it lets the wallpaper show through.
     window-rule {
-        opacity 1.0
+        draw-border-with-background false
     }
 
 output "DP-1" {
