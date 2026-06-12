@@ -43,7 +43,12 @@
       timeout = 8;          # normal notifications auto-dismiss after 8s
       timeout-low = 5;
       timeout-critical = 0; # critical stays until dismissed
-      fit-to-screen = true;
+      # Let the drawer shrink to the number of notifications instead of spanning
+      # the full screen height. control-center-height = -1 means "fit to
+      # content" (capped at the monitor height, scrolling past that), but it is
+      # IGNORED while fit-to-screen is true — so that must be false.
+      fit-to-screen = false;
+      control-center-height = -1;
       control-center-width = 420;
       notification-window-width = 400;
       notification-icon-size = 48;
@@ -96,13 +101,20 @@
       }
       .close-button:hover { background: ${base09}; }
 
-      /* The drawer (control center) */
+      /* The drawer (control center): a semi-transparent navy box so the desktop
+         shows through faintly while title/DND text stays legible, mimicking the
+         ghostty terminal (catppuccin navy at 0.8 opacity). base00 mixed 12%
+         toward the blue accent gives the navy tint while still tracking Stylix;
+         alpha() takes it to 0.8. Plus an accent border and a soft drop shadow.
+         The margin leaves room inside the layer-shell surface for the shadow to
+         render without being clipped at the window edge. */
       .control-center {
-        background: ${base00};
+        background: alpha(mix(${base00}, ${base0D}, 0.12), 0.8);
         border: 2px solid ${base02};
         border-radius: 18px;
-        margin: 10px;
+        margin: 18px;
         padding: 12px;
+        box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.55);
       }
       .control-center .notification-background .notification {
         background: ${base01};
