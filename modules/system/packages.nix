@@ -22,7 +22,6 @@
     rofi
     nitrogen
     parted
-    protonup-ng
     bat
     ##   streamcontroller
     spotify

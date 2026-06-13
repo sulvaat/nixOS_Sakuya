@@ -89,6 +89,16 @@ Handy shell aliases defined in the config:
 
 ### 2026-06-13
 
+- **New gaming module (`modules/system/gaming.nix`).** Added while diagnosing a
+  WoW retail hard-hang on the RX 9070 XT (RDNA4): the DX12/VKD3D path triggered
+  amdgpu page faults + GPU ring resets (≪1 fps) in dense scenes, while menus and
+  Classic were fine — fixed game-side by forcing DirectX 11. The module enables
+  Feral **GameMode** (`programs.gamemode`), manages **Proton-GE** declaratively
+  via `programs.steam.extraCompatPackages` (replacing manual `protonup-ng`, now
+  removed from the package list), enables **LACT** (`services.lact`) for AMD GPU
+  control/monitoring, and adds **mangohud** + **goverlay** for an FPS/frametime/
+  VRAM overlay. Also clarified the graphics comments in `hardware.nix` (RADV, not
+  amdvlk) and dropped the dead commented `extraPackages` blocks.
 - **Upgraded all flake inputs** (nixpkgs `nixos-unstable` → 2026-06-10,
   home-manager, stylix) via `nix flake update`.
 - **Rebuild aliases build as the user.** `rb`/`rbu` now run
