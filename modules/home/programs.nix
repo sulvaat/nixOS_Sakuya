@@ -75,6 +75,10 @@
   programs.yazi = {
     enable = true;
     enableFishIntegration = true; # Automatically hooks up shell wrappers
+    # Keep the legacy wrapper name (the cd-on-quit shell function is `yy`); newer
+    # home-manager changed the default to `y`. Pinned to avoid the deprecation
+    # warning and a surprise rename.
+    shellWrapperName = "yy";
   };
 
   programs.zoxide = {

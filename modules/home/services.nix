@@ -195,8 +195,10 @@
         resumeCommand = "${pkgs.niri}/bin/niri msg action power-on-monitors";
       }
     ];
-    # Empty out the events block so sleep/suspend actions don't try to trigger a locker
-    events = [];
+    # Empty out the events block so sleep/suspend actions don't try to trigger a
+    # locker. (Newer home-manager wants an attribute set keyed by event name; an
+    # empty set is the same "no events" as the old empty list.)
+    events = {};
   };
 
   # KDE Connect

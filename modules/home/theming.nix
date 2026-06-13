@@ -22,6 +22,10 @@
     gtk4.extraConfig = {
       gtk-application-prefer-dark-theme = 1;
     };
+    # Newer home-manager defaults gtk4.theme to null; keep applying the same
+    # theme as GTK2/3 so GTK4 apps stay on Tokyonight-Dark (preserves current
+    # behavior and silences the deprecation warning).
+    gtk4.theme = config.gtk.theme;
   };
 
   # Advertise a dark color-scheme through the freedesktop appearance portal

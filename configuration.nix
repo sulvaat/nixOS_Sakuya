@@ -36,16 +36,6 @@
   # Allow unfree packages.
   nixpkgs.config.allowUnfree = true;
 
-  # Silence the "xorg.lndir has been renamed to lndir" deprecation warning. The
-  # access comes from the pinned home-manager (modules/files.nix uses
-  # pkgs.xorg.lndir), not our config, so we can't fix it at the source without
-  # bumping the input. Shadow the deprecated alias with the real package; the
-  # warn-wrapped thunk is then never forced. Drop this overlay once home-manager
-  # is updated past the rename.
-  nixpkgs.overlays = [
-    (final: prev: { xorg = prev.xorg // { lndir = final.lndir; }; })
-  ];
-
   # Clean up garbage every week.
   nix.gc = {
     automatic = true;
