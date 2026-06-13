@@ -12,8 +12,17 @@
       v = "nvim";
       vc = "sudo nvim /etc/nixos/configuration.nix";
       vh = "sudo nvim /etc/nixos/home.nix";
-      rb = "cd /etc/nixos && sudo nixos-rebuild switch --flake .";
-      rbu = "cd /etc/nixos && sudo nixos-rebuild switch --flake . --upgrade";
+      # Build as the user and let nixos-rebuild elevate (--sudo) only for
+      # activation, instead of `sudo nixos-rebuild`. Running the whole rebuild as
+      # root evaluates this git repo as root and leaves root-owned objects in
+      # .git, which later breaks `nix flake update` (run as the user). Building
+      # as the user keeps .git ours.
+      rb = "cd /etc/nixos && nixos-rebuild switch --flake . --sudo";
+      # Real upgrade for a flake system: bump flake.lock (nixpkgs, home-manager,
+      # stylix), THEN rebuild from it. `--upgrade` only updates the legacy nixos
+      # channel, which a flake build ignores — so it never actually moved
+      # packages. flake.lock is user-owned, so `nix flake update` needs no sudo.
+      rbu = "cd /etc/nixos && nix flake update && nixos-rebuild switch --flake . --sudo";
       # Garbage cleanup: keep the 3 newest system generations, collect store
       # garbage, then refresh the boot menu so the pruned generations drop off.
       gc = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +3 && sudo nix-collect-garbage && sudo /run/current-system/bin/switch-to-configuration boot";
@@ -37,8 +46,8 @@
       cat = "bat";
       v = "nvim";
       vc = "sudo nvim /etc/nixos/configuration.nix";
-      rb = "sudo nixos-rebuild switch";
-      rbu = "sudo nixos-rebuild switch --upgrade";
+      rb = "cd /etc/nixos && nixos-rebuild switch --flake . --sudo";
+      rbu = "cd /etc/nixos && nix flake update && nixos-rebuild switch --flake . --sudo";
       gc = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +3 && sudo nix-collect-garbage && sudo /run/current-system/bin/switch-to-configuration boot";
       ls = "eza --long --header --inode --sort=type --icons=auto --group-directories-first";
       cp = "xcp";
