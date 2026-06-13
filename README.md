@@ -89,6 +89,15 @@ Handy shell aliases defined in the config:
 
 ### 2026-06-12
 
+- **Japanese input (fcitx5 + Mozc).** Added `i18n.inputMethod` with fcitx5, the
+  Mozc engine, and the Wayland text-input frontend (niri implements
+  `text-input-v3`). niri autostarts the daemon via a new `@fcitx5@` token, and a
+  default profile (keyboard-us + Mozc) is seeded on first launch so `Ctrl+Space`
+  toggles English ↔ Japanese out of the box. CJK fonts were already present.
+- **SwayNC drawer fixed height.** Switched the control center from
+  `control-center-height = -1` (which grows to show *every* notification up to
+  the monitor) to a fixed 560px, sized to show the title, now-playing, DND and
+  ~3 notifications at once, scrolling for more.
 - **Now-playing widget in the SwayNC drawer.** Added the built-in `mpris` widget
   (talks MPRIS over D-Bus directly — no playerctl) so media from Chrome,
   Spotify, mpv, and the phone via KDE Connect shows with cover art and transport
