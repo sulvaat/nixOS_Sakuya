@@ -87,6 +87,24 @@ Handy shell aliases defined in the config:
 
 ## Changelog
 
+### 2026-06-13
+
+- **Upgraded all flake inputs** (nixpkgs `nixos-unstable` → 2026-06-10,
+  home-manager, stylix) via `nix flake update`.
+- **Rebuild aliases build as the user.** `rb`/`rbu` now run
+  `nixos-rebuild switch --flake . --sudo` (elevates only for activation) instead
+  of `sudo nixos-rebuild …`. Running the whole rebuild as root evaluated this git
+  repo as root and left root-owned objects in `.git`, which broke a later
+  `nix flake update`. `rbu` also now does a real flake-system upgrade
+  (`nix flake update` then rebuild) rather than `--upgrade`, which only touches
+  the ignored legacy channel. Bash aliases aligned to the same flake commands.
+- **Retired the `xorg.lndir` overlay** — the updated home-manager uses
+  `pkgs.lndir`, so the deprecation workaround is no longer needed.
+- **Pinned home-manager 26.05 default changes** to preserve current behavior:
+  `gtk4.theme = config.gtk.theme` (GTK4 stays on Tokyonight-Dark),
+  `programs.yazi.shellWrapperName = "yy"`, and migrated `services.swayidle.events`
+  from the deprecated list form to an (empty) attribute set.
+
 ### 2026-06-12
 
 - **Japanese input (fcitx5 + Mozc).** Added `i18n.inputMethod` with fcitx5, the
