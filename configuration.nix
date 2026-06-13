@@ -13,6 +13,7 @@
     ./modules/system/networking.nix
     ./modules/system/audio.nix
     ./modules/system/desktop.nix
+    ./modules/system/input-method.nix
     ./modules/system/stylix.nix
     ./modules/system/virtualisation.nix
     ./modules/system/filesystems.nix

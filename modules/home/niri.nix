@@ -52,11 +52,14 @@ let
   palette = builtins.listToAttrs (map (n: { name = n; value = colors.${n}; }) slots);
 
   # Tokens used in the template -> their concrete values at build time.
-  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@xwayland_satellite@" ];
+  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@xwayland_satellite@" "@fcitx5@" ];
   values = (map (n: colors.${n}) slots) ++ [
     "${swwwInit}"
     "${waybarInit}"
     "${pkgs.xwayland-satellite}"
+    # The wrapped fcitx5 (bundles the Mozc addon) from the system input-method
+    # module, so the daemon finds its engines.
+    "${osConfig.i18n.inputMethod.package}/bin/fcitx5"
   ];
   render = builtins.replaceStrings tokens values;
 in

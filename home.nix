@@ -4,6 +4,7 @@
 {
   imports = [
     ./modules/home/packages.nix
+    ./modules/home/input-method.nix
     ./modules/home/niri.nix
     ./modules/home/waybar.nix
     ./modules/home/services.nix
