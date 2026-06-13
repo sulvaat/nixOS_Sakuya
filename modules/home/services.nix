@@ -43,12 +43,15 @@
       timeout = 8;          # normal notifications auto-dismiss after 8s
       timeout-low = 5;
       timeout-critical = 0; # critical stays until dismissed
-      # Let the drawer shrink to the number of notifications instead of spanning
-      # the full screen height. control-center-height = -1 means "fit to
-      # content" (capped at the monitor height, scrolling past that), but it is
-      # IGNORED while fit-to-screen is true — so that must be false.
+      # Fixed drawer height, sized to show the title, now-playing card, DND and
+      # roughly three notifications at once, scrolling for any more. (Pure
+      # fit-to-content via -1 instead grows to show *every* notification up to
+      # the monitor height, which is why we use a fixed value here.)
+      # control-center-height is IGNORED while fit-to-screen is true, so that
+      # stays false. When nothing is playing the autohide'd mpris card frees
+      # space for a couple more notifications.
       fit-to-screen = false;
-      control-center-height = -1;
+      control-center-height = 560;
       control-center-width = 420;
       notification-window-width = 400;
       notification-icon-size = 48;
