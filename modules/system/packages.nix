@@ -28,7 +28,7 @@
     eza
     mesa
     tldr
-    pfetch
+    fastfetch
     #arandr
     #autorandr
     git

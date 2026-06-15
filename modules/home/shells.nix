@@ -5,6 +5,8 @@
     enable = true;
     interactiveShellInit = ''
       set fish_greeting
+      # Show a system summary on each new interactive shell (terminal window/tab).
+      fastfetch
     '';
     shellAliases = {
       cat = "bat";
@@ -42,6 +44,12 @@
 
   programs.bash = {
     enable = true;
+    # Match fish: show a system summary on each new interactive shell. Guard on
+    # $- containing `i` so it never runs in scripts, scp, or other
+    # non-interactive bash invocations.
+    initExtra = ''
+      [[ $- == *i* ]] && fastfetch
+    '';
     shellAliases = {
       cat = "bat";
       v = "nvim";

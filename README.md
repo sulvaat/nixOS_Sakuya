@@ -89,6 +89,11 @@ Handy shell aliases defined in the config:
 
 ### 2026-06-13
 
+- **Terminal greeting via fastfetch.** New interactive shells now run
+  `fastfetch` to print a system summary. Wired into fish's `interactiveShellInit`
+  (interactive-only by definition) and bash's `initExtra` (guarded with
+  `[[ $- == *i* ]]` so it never fires in scripts or non-interactive shells).
+  Replaced the unused `pfetch` with `fastfetch` in the package list.
 - **New gaming module (`modules/system/gaming.nix`).** Added while diagnosing a
   WoW retail hard-hang on the RX 9070 XT (RDNA4): the DX12/VKD3D path triggered
   amdgpu page faults + GPU ring resets (≪1 fps) in dense scenes, while menus and
