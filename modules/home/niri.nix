@@ -44,6 +44,18 @@ let
     exec ${pkgs.waybar}/bin/waybar
   '';
 
+  # When a game (e.g. Halo Infinite under gamescope) takes exclusive fullscreen,
+  # niri drops its layer-shell surfaces (waybar, the swww wallpaper) and does not
+  # always re-show them on exit. The processes survive, so a full niri restart is
+  # overkill — this respawns waybar and repaints the wallpaper. Bound to a key
+  # below so recovery is one chord instead of a compositor restart.
+  niriRestore = pkgs.writeShellScript "niri-restore-shell" ''
+    ${pkgs.procps}/bin/pkill -x waybar 2>/dev/null || true
+    export PATH=${swwwCompat}/bin:$PATH
+    ${pkgs.waypaper}/bin/waypaper --restore >/dev/null 2>&1 &
+    exec ${waybarInit}
+  '';
+
   colors = osConfig.lib.stylix.colors.withHashtag;
   slots = [
     "base00" "base01" "base02" "base03" "base04" "base05" "base06" "base07"
@@ -52,10 +64,11 @@ let
   palette = builtins.listToAttrs (map (n: { name = n; value = colors.${n}; }) slots);
 
   # Tokens used in the template -> their concrete values at build time.
-  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@xwayland_satellite@" "@fcitx5@" ];
+  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@niri_restore@" "@xwayland_satellite@" "@fcitx5@" ];
   values = (map (n: colors.${n}) slots) ++ [
     "${swwwInit}"
     "${waybarInit}"
+    "${niriRestore}"
     "${pkgs.xwayland-satellite}"
     # The wrapped fcitx5 (bundles the Mozc addon) from the system input-method
     # module, so the daemon finds its engines.

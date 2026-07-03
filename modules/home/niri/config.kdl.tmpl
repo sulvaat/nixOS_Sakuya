@@ -121,6 +121,9 @@ output "DP-1" {
         Mod+Ctrl+F { expand-column-to-available-width; }
         Mod+T { toggle-window-floating; }
         Mod+Shift+P { power-off-monitors; }
+        // Restore waybar + wallpaper after a fullscreen game (gamescope) drops
+        // niri's layer-shell surfaces, without a full compositor restart.
+        Mod+Shift+B { spawn "@niri_restore@"; }
         Mod+C { center-column; }
         Mod+Ctrl+C { center-visible-columns; }
 
