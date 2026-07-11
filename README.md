@@ -51,7 +51,7 @@ imports and a few globals.
         ├── packages.nix       #   per-user packages
         ├── niri.nix           #   Niri config + swww startup helpers
         ├── waybar.nix         #   Waybar config + window-list helper
-        ├── services.nix       #   Flameshot, SwayNC, swayidle, KDE Connect
+        ├── services.nix       #   SwayNC, swayidle, KDE Connect
         ├── theming.nix        #   GTK theme/icons/cursor
         ├── shells.nix         #   Fish, Bash, Starship
         └── programs.nix       #   Fuzzel, Kitty, Ghostty, Git, Yazi, Zoxide
@@ -86,6 +86,41 @@ Handy shell aliases defined in the config:
 > are uncommitted changes — it's harmless. Commit when the build looks good.
 
 ## Changelog
+
+### 2026-07-10
+
+- **Screenshots: replaced Flameshot with grim/slurp/satty.** Flameshot v14
+  dropped its grim adapter and now captures *only* through the XDG Screenshot
+  portal, which has no working backend on niri — the `xdg-desktop-portal-wlr`
+  `UseIn` list excludes niri, and the niri package ships a `niri-portals.conf`
+  that shadows NixOS's portal overrides, so capture hung for 30s on the gnome
+  backend and the buttons did nothing. Dropped the `services.flameshot` module
+  and reverted the portal config to gtk-only. `Print` now runs a `slurp` region
+  select piped through `grim` into **satty** (annotate, save to
+  `~/Pictures/Screenshots`, copy via `wl-copy`); `Mod+Print` grabs a region
+  straight to the clipboard. Scripts live in `modules/home/niri.nix` behind new
+  `@screenshot@` / `@screenshot_clip@` tokens.
+- **Gaming: gamescope for Halo Infinite + RADV from Mesa main.** Halo's campaign
+  relaunches as a separate "subgame" process whose window never registers with
+  xwayland-satellite under niri — the game was audible but invisible. Enabled
+  `programs.gamescope` so all of Halo's windows land in one window niri manages.
+  Added the **chaotic-nyx** flake input and enabled `chaotic.mesa-git` for RADV
+  from Mesa main (RDNA4 fixes). `RADV_DEBUG=nodcc` in the launch options fixes
+  DCC color-compression artifacting ("TV static" bands) on RDNA4; recommended
+  launch options are documented inline in `gaming.nix`.
+- **Gaming: user-space GPU clock pinning (`gpu-perf`).** A wrapper + udev rule
+  make amdgpu's `power_dpm_force_performance_level` group-writable and pin it to
+  `high` for a game's lifetime (restoring `auto` on exit). GameMode's own GPU
+  path can't do this here — it elevates `gpuclockctl` via pkexec and NixOS ships
+  no polkit authorization, so it silently no-ops. *Note:* this does **not** fix
+  the observed mid-session FPS stall on Halo; telemetry showed GPU starvation
+  upstream of clocks (a game/Proton/mesa issue), still under investigation.
+- **Niri: `Mod+Shift+B` restores the bar/wallpaper after fullscreen games.**
+  Exclusive-fullscreen games (Halo under gamescope) make niri drop its
+  layer-shell surfaces (waybar, swww wallpaper) and not re-show them on exit;
+  the processes survive, so a full compositor restart was overkill. The chord
+  respawns waybar and repaints the wallpaper via a `@niri_restore@` helper.
+- **Packages:** added `nix-tree`, `darktable`, and `filezilla`.
 
 ### 2026-06-13
 
