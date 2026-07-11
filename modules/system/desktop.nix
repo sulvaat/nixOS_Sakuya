@@ -26,7 +26,9 @@
     fade = true;
   };
 
-  # XDG desktop portals.
+  # XDG desktop portals. (Screenshots are handled directly by grim/slurp/satty
+  # in the niri config, not via the Screenshot portal — flameshot v14's
+  # portal-only capture never worked reliably on niri; see modules/home/niri.nix.)
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];

@@ -1,22 +1,10 @@
 # User services: screenshots, notifications, idle, KDE Connect.
 { config, pkgs, lib, osConfig, ... }:
 {
-  # Screenshot tool
-  services.flameshot = {
-    enable = true;
-    settings = {
-      General = {
-        # Critical for Wayland support
-        useGrimAdapter = true;
-        disabledGrimWarning = true;
-        showStartupLaunchMessage = false;
-        # Default directory for saved screenshots
-        savePath = "${config.home.homeDirectory}/Pictures/Screenshots";
-        # Always save to savePath instead of remembering the last-used folder
-        savePathFixed = true;
-      };
-    };
-  };
+  # Screenshots are handled by grim/slurp/satty, bound to Print in
+  # modules/home/niri (config.kdl.tmpl). Flameshot was dropped: v14 removed its
+  # grim adapter and switched to portal-only capture, which never worked
+  # reliably on niri (the wlr Screenshot portal isn't wired for niri).
 
   # Notification daemon + center (Wayland). SwayNC replaces mako: it gives a
   # themed pill-style popup, per-urgency auto-timeouts, and a slide-out

@@ -127,8 +127,10 @@ output "DP-1" {
         Mod+C { center-column; }
         Mod+Ctrl+C { center-visible-columns; }
 
-        Print { spawn "flameshot" "gui"; }
-        Mod+Print { spawn "flameshot" "gui" "--clipboard" "--accept-on-select"; }
+        // Screenshots: grim+slurp region select -> satty annotator (save+copy).
+        // Mod+Print grabs a region straight to the clipboard with no editor.
+        Print { spawn "@screenshot@"; }
+        Mod+Print { spawn "@screenshot_clip@"; }
 
         XF86AudioRaiseVolume allow-when-locked=true { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "+5%"; }
         XF86AudioLowerVolume allow-when-locked=true { spawn "pactl" "set-sink-volume" "@DEFAULT_SINK@" "-5%"; }

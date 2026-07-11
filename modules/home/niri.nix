@@ -56,6 +56,28 @@ let
     exec ${waybarInit}
   '';
 
+  # Screenshots on niri via grim + slurp + satty (flameshot v14's portal-only
+  # capture never worked reliably here). slurp selects a region, grim captures
+  # it, satty is the annotation editor (arrows/boxes/text/blur, save + copy).
+  # Escaping slurp (empty selection) exits cleanly instead of erroring grim.
+  screenshotAnnotate = pkgs.writeShellScript "niri-screenshot" ''
+    dir="$HOME/Pictures/Screenshots"
+    mkdir -p "$dir"
+    geom=$(${pkgs.slurp}/bin/slurp) || exit 0
+    [ -z "$geom" ] && exit 0
+    ${pkgs.grim}/bin/grim -g "$geom" - | ${pkgs.satty}/bin/satty --filename - \
+      --output-filename "$dir/screenshot-$(date +%Y%m%d-%H%M%S).png" \
+      --copy-command ${pkgs.wl-clipboard}/bin/wl-copy --early-exit
+  '';
+
+  # Quick region grab straight to the clipboard, no editor (matches the old
+  # flameshot --clipboard --accept-on-select binding).
+  screenshotClip = pkgs.writeShellScript "niri-screenshot-clip" ''
+    geom=$(${pkgs.slurp}/bin/slurp) || exit 0
+    [ -z "$geom" ] && exit 0
+    ${pkgs.grim}/bin/grim -g "$geom" - | ${pkgs.wl-clipboard}/bin/wl-copy
+  '';
+
   colors = osConfig.lib.stylix.colors.withHashtag;
   slots = [
     "base00" "base01" "base02" "base03" "base04" "base05" "base06" "base07"
@@ -64,11 +86,13 @@ let
   palette = builtins.listToAttrs (map (n: { name = n; value = colors.${n}; }) slots);
 
   # Tokens used in the template -> their concrete values at build time.
-  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@niri_restore@" "@xwayland_satellite@" "@fcitx5@" ];
+  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@niri_restore@" "@screenshot@" "@screenshot_clip@" "@xwayland_satellite@" "@fcitx5@" ];
   values = (map (n: colors.${n}) slots) ++ [
     "${swwwInit}"
     "${waybarInit}"
     "${niriRestore}"
+    "${screenshotAnnotate}"
+    "${screenshotClip}"
     "${pkgs.xwayland-satellite}"
     # The wrapped fcitx5 (bundles the Mozc addon) from the system input-method
     # module, so the daemon finds its engines.
@@ -77,7 +101,14 @@ let
   render = builtins.replaceStrings tokens values;
 in
 {
-  home.packages = [ swwwCompat ];
+  home.packages = [
+    swwwCompat
+    # Screenshot stack, bound to Print/Mod+Print below.
+    pkgs.grim
+    pkgs.slurp
+    pkgs.satty
+    pkgs.wl-clipboard
+  ];
 
   # Generate the Niri config from the tool-editable template.
   xdg.configFile."niri/config.kdl".text = render (builtins.readFile ./niri/config.kdl.tmpl);
