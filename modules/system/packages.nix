@@ -74,5 +74,8 @@
     rust-analyzer
     android-tools
     nodejs        # Provides both `node` and `npm`
+    nix-tree
+    darktable
+    filezilla
   ];
 }
