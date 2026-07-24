@@ -129,6 +129,8 @@ Handy shell aliases defined in the config:
   process the user runs can then read all input; noted in `users.nix`.
 - **Packages:** added `nix-tree`, `darktable`, `filezilla`, and `imv` (a
   Wayland-native lightweight image viewer).
+- **Flake inputs refreshed** via `nix flake update` — nixpkgs (`nixos-unstable`),
+  chaotic-nyx (mesa-git RADV), home-manager, and stylix all bumped.
 
 ### 2026-06-13
 
