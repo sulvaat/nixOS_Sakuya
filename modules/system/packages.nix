@@ -43,6 +43,7 @@
     transmission_4
     gcc
     image-roll
+    imv          # Wayland-native lightweight image viewer
     pcmanfm
     fishPlugins.done
     fishPlugins.fzf-fish
