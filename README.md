@@ -120,7 +120,15 @@ Handy shell aliases defined in the config:
   layer-shell surfaces (waybar, swww wallpaper) and not re-show them on exit;
   the processes survive, so a full compositor restart was overkill. The chord
   respawns waybar and repaints the wallpaper via a `@niri_restore@` helper.
-- **Packages:** added `nix-tree`, `darktable`, and `filezilla`.
+- **Discord push-to-talk on Wayland.** Added the user to the `input` group so
+  official Discord can read `/dev/input/event*` via evdev for global keybinds.
+  Wayland blocks apps from reading the keyboard while unfocused (anti-keylog),
+  and Discord's evdev fallback was denied without group access, so the PTT key
+  never registered — even in Discord's own keybind recorder. evdev reads ignore
+  window focus, so this makes PTT work globally (incl. in-game). Trade-off: any
+  process the user runs can then read all input; noted in `users.nix`.
+- **Packages:** added `nix-tree`, `darktable`, `filezilla`, and `imv` (a
+  Wayland-native lightweight image viewer).
 
 ### 2026-06-13
 
