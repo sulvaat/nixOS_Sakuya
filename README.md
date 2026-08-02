@@ -112,6 +112,13 @@ Handy shell aliases defined in the config:
 - **ProtonUp-Qt** added for installing/updating GE-Proton on demand into Steam's
   `compatibilitytools.d`. Complements the declarative `proton-ge-bin` — both
   appear in Steam's per-game compatibility menu.
+- **Niri scale hotkeys.** `Mod+=` / `Mod+-` adjust the focused output's scale up
+  and down by 0.1 (clamped 0.5–3.0), via a small script that reads the current
+  scale from `niri msg -j focused-output` and applies the new value with a
+  notification. Runtime-only — resets on niri restart.
+- **Removed OpenRazer.** Dropped `hardware.openrazer`, the `polychromatic` GUI,
+  and the `openrazer` user group — the Razer daemon, kernel driver, and udev
+  rules are gone.
 
 ### 2026-07-10
 
