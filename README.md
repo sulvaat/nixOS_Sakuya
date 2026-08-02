@@ -40,7 +40,7 @@ imports and a few globals.
     │   ├── hardware.nix       #   graphics, OpenRazer, controllers
     │   ├── networking.nix     #   firewall, Avahi/mDNS, NetworkManager, SSH
     │   ├── audio.nix          #   PipeWire
-    │   ├── desktop.nix        #   Xorg, Niri enable, portals, picom, fonts
+    │   ├── desktop.nix        #   Niri enable, console login + `desktop` launcher, portals, fonts
     │   ├── stylix.nix         #   theme, wallpaper, fonts
     │   ├── virtualisation.nix #   libvirtd, virt-manager
     │   ├── filesystems.nix    #   NFS + btrfs mounts
@@ -86,6 +86,29 @@ Handy shell aliases defined in the config:
 > are uncommitted changes — it's harmless. Commit when the build looks good.
 
 ## Changelog
+
+### 2026-08-02
+
+- **Minimal console login.** Replaced the graphical login (LightDM) with a plain
+  TTY: the display manager is off and the boot target is pinned to
+  `multi-user.target`, so the machine comes up at a text console. A new
+  `desktop` command (in `desktop.nix`) prints a figlet banner of the hostname
+  and hands off to `niri-session`; log in at the console and run `desktop` to
+  start the compositor (exit niri to drop back to the login prompt). No
+  auto-login — you log in by hand.
+- **Dropped the X server and picom.** niri is Wayland-native and X apps run
+  through xwayland-satellite, so `services.xserver` (which auto-enabled LightDM)
+  and the picom X11 compositor were unnecessary — both removed. amdgpu still
+  loads early via `boot.initrd.kernelModules`, independent of the old
+  `xserver.videoDrivers` setting.
+- **GTK theme: `tokyonight-gtk-theme` → `adw-gtk3-dark`.** A flake update pulled
+  a nixpkgs where `tokyonight-gtk-theme` was removed (its GTK2
+  `gtk-engine-murrine` dependency is gone and can't be repackaged), which broke
+  evaluation. Switched GTK3 apps to the maintained `adw-gtk3-dark`; GTK4/
+  libadwaita apps follow the `prefer-dark` hints. GTK apps now read Adwaita-dark
+  rather than Tokyo-tinted, since no Tokyo Night GTK theme remains in nixpkgs.
+- **Flake inputs updated** via `nix flake update` — nixpkgs (`nixos-unstable`),
+  chaotic-nyx (mesa-git RADV), home-manager, and stylix.
 
 ### 2026-07-10
 
