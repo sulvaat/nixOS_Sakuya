@@ -3,9 +3,15 @@
 {
   gtk = {
     enable = true;
+    # `tokyonight-gtk-theme` was removed from nixpkgs (its GTK2
+    # `gtk-engine-murrine` dependency is gone) and Stylix doesn't theme GTK
+    # here, so GTK3 apps use adw-gtk3-dark — a maintained theme that matches
+    # modern libadwaita/Adwaita styling (GTK4 apps follow prefer-dark natively,
+    # so no gtk4.theme is set). Dark is enforced by the prefer-dark hints and
+    # the dconf color-scheme below.
     theme = {
-      name = "Tokyonight-Dark";
-      package = pkgs.tokyonight-gtk-theme;
+      name = "adw-gtk3-dark";
+      package = pkgs.adw-gtk3;
     };
     iconTheme = {
       name = "Papirus-Dark";
@@ -22,10 +28,6 @@
     gtk4.extraConfig = {
       gtk-application-prefer-dark-theme = 1;
     };
-    # Newer home-manager defaults gtk4.theme to null; keep applying the same
-    # theme as GTK2/3 so GTK4 apps stay on Tokyonight-Dark (preserves current
-    # behavior and silences the deprecation warning).
-    gtk4.theme = config.gtk.theme;
   };
 
   # Advertise a dark color-scheme through the freedesktop appearance portal
