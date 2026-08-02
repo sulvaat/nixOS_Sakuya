@@ -78,5 +78,9 @@ in
     mangohud
     goverlay
     gpuPerf   # `gpu-perf`: pin GPU to high perf level for a wrapped game (see above)
+    # ProtonUp-Qt: GUI to install/update GE-Proton (and other compat tools) into
+    # Steam's compatibilitytools.d. Complements the declarative proton-ge-bin
+    # above — versions it installs appear in Steam's per-game compat menu too.
+    protonup-qt
   ];
 }

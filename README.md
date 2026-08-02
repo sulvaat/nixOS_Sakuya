@@ -109,6 +109,9 @@ Handy shell aliases defined in the config:
   rather than Tokyo-tinted, since no Tokyo Night GTK theme remains in nixpkgs.
 - **Flake inputs updated** via `nix flake update` — nixpkgs (`nixos-unstable`),
   chaotic-nyx (mesa-git RADV), home-manager, and stylix.
+- **ProtonUp-Qt** added for installing/updating GE-Proton on demand into Steam's
+  `compatibilitytools.d`. Complements the declarative `proton-ge-bin` — both
+  appear in Steam's per-game compatibility menu.
 
 ### 2026-07-10
 
