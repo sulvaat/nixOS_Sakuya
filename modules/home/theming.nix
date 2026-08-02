@@ -28,6 +28,11 @@
     gtk4.extraConfig = {
       gtk-application-prefer-dark-theme = 1;
     };
+    # Don't push the GTK3-only adw-gtk3 theme onto GTK4 apps — libadwaita apps
+    # theme themselves and follow the prefer-dark hint. Set explicitly to null
+    # to adopt the new home-manager default and silence the legacy-default
+    # warning (our stateVersion is < 26.05).
+    gtk4.theme = null;
   };
 
   # Advertise a dark color-scheme through the freedesktop appearance portal
