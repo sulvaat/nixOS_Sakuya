@@ -61,7 +61,6 @@
     quodlibet
     cava
     grim
-    polychromatic
     input-remapper
     python3
     python3Packages.pip    # Changed from python311Packages

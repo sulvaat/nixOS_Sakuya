@@ -7,7 +7,7 @@
     # keybinds (push-to-talk) — Wayland blocks apps from reading the keyboard
     # while unfocused, and Discord's evdev fallback needs this group or the key
     # never registers. (Trade-off: any process you run can then read all input.)
-    extraGroups = [ "wheel" "libvirtd" "adbusers" "openrazer" "input" ]; # Enable 'sudo' for the user.
+    extraGroups = [ "wheel" "libvirtd" "adbusers" "input" ]; # Enable 'sudo' for the user.
     shell = pkgs.fish;
     packages = with pkgs; [
       tree
