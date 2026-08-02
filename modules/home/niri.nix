@@ -78,6 +78,24 @@ let
     ${pkgs.grim}/bin/grim -g "$geom" - | ${pkgs.wl-clipboard}/bin/wl-copy
   '';
 
+  # Adjust the FOCUSED output's scale up/down by a step (niri has no relative
+  # scale action, so we read the current scale, bump + clamp it, and set it).
+  # $1 is "up" or "down". Changes are runtime-only (not written to config), so
+  # they reset on niri restart. Tune the step / 0.5–3.0 clamp to taste.
+  niriScale = pkgs.writeShellScript "niri-scale" ''
+    info=$(${pkgs.niri}/bin/niri msg -j focused-output) || exit 1
+    name=$(printf '%s' "$info" | ${pkgs.jq}/bin/jq -r '.name')
+    new=$(printf '%s' "$info" | ${pkgs.jq}/bin/jq -r --arg dir "$1" '
+      .logical.scale as $c
+      | (if $dir == "up" then $c + 0.1 else $c - 0.1 end)
+      | (if . < 0.5 then 0.5 elif . > 3.0 then 3.0 else . end)
+      | (. * 100 | round) / 100')
+    ${pkgs.niri}/bin/niri msg output "$name" scale "$new"
+    ${pkgs.libnotify}/bin/notify-send -t 1200 \
+      -h string:x-canonical-private-synchronous:niri-scale \
+      "Display scale" "$name → $new"
+  '';
+
   colors = osConfig.lib.stylix.colors.withHashtag;
   slots = [
     "base00" "base01" "base02" "base03" "base04" "base05" "base06" "base07"
@@ -86,13 +104,14 @@ let
   palette = builtins.listToAttrs (map (n: { name = n; value = colors.${n}; }) slots);
 
   # Tokens used in the template -> their concrete values at build time.
-  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@niri_restore@" "@screenshot@" "@screenshot_clip@" "@xwayland_satellite@" "@fcitx5@" ];
+  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@niri_restore@" "@screenshot@" "@screenshot_clip@" "@niri_scale@" "@xwayland_satellite@" "@fcitx5@" ];
   values = (map (n: colors.${n}) slots) ++ [
     "${swwwInit}"
     "${waybarInit}"
     "${niriRestore}"
     "${screenshotAnnotate}"
     "${screenshotClip}"
+    "${niriScale}"
     "${pkgs.xwayland-satellite}"
     # The wrapped fcitx5 (bundles the Mozc addon) from the system input-method
     # module, so the daemon finds its engines.
