@@ -72,15 +72,26 @@ in
   # including visibility into GPU resets. Runs the lactd daemon.
   services.lact.enable = true;
 
-  # Overlay + tooling: mangohud (FPS / frametime / VRAM / temp overlay) and
-  # goverlay (its config GUI). Use with `mangohud %command%` or MANGOHUD=1.
+  # Overlay + tooling: mangohud (FPS / frametime / VRAM / temp overlay). Use with
+  # `mangohud %command%` or MANGOHUD=1; configure via ~/.config/MangoHud/MangoHud.conf
+  # or MANGOHUD_CONFIG=. goverlay (its GUI) is dropped for now: it's built with
+  # Lazarus, and lazarus-qt6 fails to build on nixpkgs 2026-09-29 (new
+  # NIX_LDFLAGS empty-path-segment check). Re-add once that's fixed upstream.
   environment.systemPackages = with pkgs; [
     mangohud
-    goverlay
     gpuPerf   # `gpu-perf`: pin GPU to high perf level for a wrapped game (see above)
     # ProtonUp-Qt: GUI to install/update GE-Proton (and other compat tools) into
     # Steam's compatibilitytools.d. Complements the declarative proton-ge-bin
     # above — versions it installs appear in Steam's per-game compat menu too.
     protonup-qt
+    dolphin-emu   # GameCube / Wii emulator
+    # Steam ROM Manager: scans ROM dirs and adds each game to the Steam library
+    # as a shortcut (launched via an emulator) with SteamGridDB artwork — the
+    # "EmuDeck-like, launched through Steam" frontend. Configure at runtime.
+    steam-rom-manager
+    # RetroArch (controller-navigable frontend) + Neko Project II Kai core for
+    # PC-98 emulation. Browse PC-98 games as a RetroArch playlist, or push them
+    # to Steam via steam-rom-manager. Core file: np2kai_libretro.so.
+    (retroarch.withCores (cores: [ cores.np2kai ]))
   ];
 }
