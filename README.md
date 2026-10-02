@@ -37,12 +37,13 @@ imports and a few globals.
 └── modules/
     ├── system/                # NixOS modules
     │   ├── boot.nix           #   bootloader, kernel, amdgpu
-    │   ├── hardware.nix       #   graphics, OpenRazer, controllers
+    │   ├── hardware.nix       #   graphics, controllers
     │   ├── networking.nix     #   firewall, Avahi/mDNS, NetworkManager, SSH
-    │   ├── audio.nix          #   PipeWire
+    │   ├── audio.nix          #   PipeWire, AirPlay (RAOP) output to Sonos
     │   ├── desktop.nix        #   Niri enable, console login + `desktop` launcher, portals, fonts
+    │   ├── gaming.nix         #   GameMode, Proton-GE, gamescope, mesa-git, LACT, emulators
     │   ├── stylix.nix         #   theme, wallpaper, fonts
-    │   ├── virtualisation.nix #   libvirtd, virt-manager
+    │   ├── virtualisation.nix #   libvirtd, virt-manager, swtpm (TPM 2.0)
     │   ├── filesystems.nix    #   NFS + btrfs mounts
     │   ├── programs.nix       #   Steam, AppImage, Flatpak, Fish enable
     │   ├── packages.nix       #   environment.systemPackages
@@ -86,6 +87,52 @@ Handy shell aliases defined in the config:
 > are uncommitted changes — it's harmless. Commit when the build looks good.
 
 ## Changelog
+
+### 2026-10-02
+
+- **AirPlay output to Sonos.** PipeWire's `raop-discover` module now finds
+  AirPlay receivers over mDNS and exposes each one as a normal output device.
+  The Sonos Arc and Beam (AirPlay 2, unencrypted RAOP) show up next to the local
+  outputs, and so does the Sony TV. `raopOpenFirewall` opens UDP 6001–6002 for
+  AirPlay timing/control. Non-AirPlay Sonos units (Bedroom) play along if
+  grouped with an AirPlay unit in the Sonos app. AirPlay buffers about 2 s, so
+  this suits music and not games or video.
+- **Software TPM 2.0 for VMs.** Enabled `virtualisation.libvirtd.qemu.swtpm`.
+  UEFI + Secure Boot firmware (edk2/OVMF) already ships with QEMU. In
+  virt-manager, use Q35, the `…secure` UEFI firmware, and Add Hardware → TPM
+  (Emulated, CRB, 2.0) for Windows 11.
+- **GameCube via Dolphin + Steam ROM Manager.** Added `dolphin-emu` and
+  `steam-rom-manager`. SRM adds ROMs to the Steam library with SteamGridDB art
+  and launches them via `/run/current-system/sw/bin/dolphin-emu -b -e`. Dolphin
+  splits its dirs: config in `~/.config/dolphin-emu`, per-game INIs/cheats in
+  `~/.local/share/dolphin-emu/GameSettings`. Cheats (kept outside the repo so
+  Dolphin can write enabled-state) need `EnableCheats = True` and the code
+  listed under `[Gecko_Enabled]`, and then apply on a Steam/batch launch too.
+- **PC-98 via RetroArch + Neko Project II Kai.** Added
+  `retroarch.withCores (cores: [ cores.np2kai ])`. RetroArch is the
+  controller-navigable frontend, added to Steam as one non-Steam entry. PC-98
+  firmware (`font.rom` etc.) goes in `~/.config/retroarch/system/np2kai/`.
+- **Win95/98SE via 86Box.** Added `_86box-with-roms` (machine BIOS romset
+  bundled). An i440BX / Pentium II board is a solid Win98SE target.
+- **Niri:** `Mod+Shift+T` switches focus between the tiling and floating layers
+  (`Mod+T` still moves the window between them).
+- **Removed `goverlay`** (MangoHud's GUI). `lazarus-qt6` fails to build on
+  nixpkgs 2026-09-29 (new `NIX_LDFLAGS` empty-path check), and goverlay is built
+  with Lazarus. `mangohud` itself stays; configure it via
+  `~/.config/MangoHud/MangoHud.conf` / `MANGOHUD_CONFIG`. Re-add when fixed.
+- **Removed `nitrogen`.** It was dropped from nixpkgs (GTK2), and the X11
+  wallpaper setter was unused here anyway since swww/waypaper handle it.
+- **Flake inputs updated** (nixpkgs 2026-09-29, chaotic-nyx, home-manager).
+  `_86Box-with-roms` was renamed upstream to `_86box-with-roms`. A remaining
+  `nix.nixPath` rename warning comes from nixpkgs' own `flake.nix` and is
+  harmless.
+- **Known issue — 2026 Steam Controller dies when Steam is open.** The
+  controller (PID `1302`) isn't bound by kernel 7.2's `hid-steam`, so Steam
+  disables lizard mode but can't drive it
+  ([steam-for-linux #13185](https://github.com/ValveSoftware/steam-for-linux/issues/13185)).
+  Fixed in Linux 7.3. Since `boot.kernelPackages = linuxPackages_latest`, it'll
+  be resolved by a rebuild once nixpkgs ships 7.3 stable. Lizard mode works
+  meanwhile with Steam closed.
 
 ### 2026-08-02
 
