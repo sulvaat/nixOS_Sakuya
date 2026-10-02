@@ -20,7 +20,6 @@
     lutris
     discord
     rofi
-    nitrogen
     parted
     bat
     ##   streamcontroller
@@ -77,5 +76,6 @@
     nix-tree
     darktable
     filezilla
+    _86box-with-roms   # Period-accurate PC emulator (Win95/98SE etc.), ROMs bundled
   ];
 }
