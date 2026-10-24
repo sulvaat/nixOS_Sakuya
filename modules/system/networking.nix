@@ -21,10 +21,11 @@
   services.avahi = {
     enable = true;
     nssmdns4 = true; # Allows software to find .local domains
-    publish = {
-      enable = true;
-      addresses = true;
-      userServices = true;
+    # (Renamed from the old publish.{enable,addresses,userServices} options.)
+    settings.publish = {
+      disable-publishing = false;
+      publish-addresses = true;
+      disable-user-service-publishing = false;
     };
   };
 

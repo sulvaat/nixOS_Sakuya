@@ -10,6 +10,22 @@
 # QT_IM_MODULE hacks. XWayland apps fall back via fcitx5's X11 frontend.
 { pkgs, ... }:
 {
+  # Workaround (2026-10): Qt's newer `uic` rejects class names with a leading
+  # "::", and mozc's dictionary_tool.ui uses "::mozc::gui::DictionaryContentTableWidget",
+  # so mozc (and fcitx5-mozc, which depends on it) fails to build from nixpkgs
+  # 2026-10-20 on. Strip the leading "::". The sed only matches that form, so it
+  # becomes a no-op once upstream fixes the file. Remove when nixpkgs builds
+  # mozc again.
+  nixpkgs.overlays = [
+    (final: prev: {
+      mozc = prev.mozc.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          sed -i 's/\([">]\)::mozc::/\1mozc::/g' src/gui/dictionary_tool/dictionary_tool.ui
+        '';
+      });
+    })
+  ];
+
   i18n.inputMethod = {
     enable = true;
     type = "fcitx5";
