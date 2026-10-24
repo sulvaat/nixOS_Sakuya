@@ -6,7 +6,29 @@
 # http://127.0.0.1:8000 (the "Companion" app-menu entry opens it).
 { config, pkgs, ... }:
 let
-  companion = pkgs.bitfocus-companion;
+  # Companion gives a surface add-on 5 s to open a device. Right after power-up
+  # the Live needs ~9 s (the add-on clears every display, and the first 194 KB
+  # main-display draw alone takes 4-8 s). Companion then gives up while the
+  # add-on finishes anyway and keeps the port, so the panel shows its logo, goes
+  # dark, and every rescan or replug fails with "already opened" until Companion
+  # restarts. Patch the open call to wait 30 s instead. Only dist/main.js is
+  # copied and patched; everything else is symlinked, so there's no rebuild.
+  # --replace-fail stops the build if an update changes the code, so the patch
+  # can be checked (and dropped if upstream fixes it).
+  companion = pkgs.runCommand "bitfocus-companion-${pkgs.bitfocus-companion.version}-loupedeck" { } ''
+    src=${pkgs.bitfocus-companion}
+    app=share/bitfocus-companion
+    mkdir -p $out/bin $out/$app/dist
+    for f in $src/$app/*; do [ "''${f##*/}" = dist ] || ln -s $f $out/$app/; done
+    for f in $src/$app/dist/*; do [ "''${f##*/}" = main.js ] || ln -s $f $out/$app/dist/; done
+    cp $src/$app/dist/main.js $out/$app/dist/main.js
+    substituteInPlace $out/$app/dist/main.js --replace-fail \
+      'sendWithCb("openScannedDevice",{device:e.scannedDeviceInfo,resolvedSurfaceId:r})' \
+      'sendWithCb("openScannedDevice",{device:e.scannedDeviceInfo,resolvedSurfaceId:r},void 0,3e4)'
+    sed "s|$src/$app/dist/main.js|$out/$app/dist/main.js|" $src/bin/bitfocus-companion > $out/bin/bitfocus-companion
+    chmod +x $out/bin/bitfocus-companion
+    grep -q "$out/$app/dist/main.js" $out/bin/bitfocus-companion
+  '';
 
   # USB permissions. The Live appears as a USB serial port (/dev/ttyACM*, vendor
   # 2ec2) owned by root:dialout. Rather than putting the user in dialout (every

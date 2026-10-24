@@ -77,6 +77,7 @@ monitor (DP-1, DP-2, HDMI-A-1), then on-screen position.
 | `niri-deck` (command) | Run by buttons/knobs: `/run/current-system/sw/bin/niri-deck …` |
 | udev rule `70-loupedeck.rules` | Gives the logged-in user access to Loupedeck devices (`uaccess`), tells ModemManager to ignore them |
 | `/usr/bin/udevadm` symlink | Companion's add-ons run with no `PATH`; the Loupedeck add-on needs `udevadm` to find the device |
+| Patched Companion (open timeout 30 s) | Companion allows 5 s to open a surface; after power-up the Live takes ~5-9 s to clear its displays, so stock Companion gave up and the panel stayed dark |
 
 Companion custom variables (all must exist, or the feeds log a 404):
 
@@ -136,6 +137,7 @@ or `curl -s 'http://127.0.0.1:8000/int/export/full?includeSecrets=false&format=j
 | Symptom | Check |
 |---|---|
 | "No surfaces found" | `journalctl --user -u bitfocus-companion` — `spawn udevadm ENOENT` means the `/usr/bin/udevadm` symlink is missing; permission errors → replug after `rb` (`ls -l /dev/ttyACM*` should show `+`) |
+| Panel shows its logo, then goes dark; log says `Call timed out` then `already opened` | the open-timeout patch isn't active: `systemctl --user cat bitfocus-companion` should show a `…-loupedeck` store path. If the build failed at `substituteInPlace`, a Companion update changed the code: check whether upstream fixed it, else update the patch string in `loupedeck.nix`. To recover now: `systemctl --user restart bitfocus-companion`, then replug |
 | Meters / windows / LEDs frozen | `systemctl --user status companion-vu-feed niri-deck-feed`; their logs name any missing custom variable |
 | A button shows `ERR` | the expression returned nothing — see Gotchas |
 | MangoHud knob does nothing | game must run with `mangohud` / `--mangoapp`; remove `MANGOHUD_CONFIG=` from launch options; restart the game once so MangoHud watches the config |

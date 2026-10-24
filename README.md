@@ -114,6 +114,13 @@ Handy shell aliases defined in the config:
   (green → red, blinking red when muted), song position and MangoHud preset.
 - **Companion config backup** in `docs/loupedeck/` (secrets excluded, device
   serial stripped) so the deck can be restored by import.
+- **Loupedeck reconnects after replug / reboot.** Companion gave the add-on 5 s
+  to open the device, but right after power-up the Live needs ~5-9 s to clear
+  its displays. Companion gave up while the add-on kept the port, so the panel
+  showed its logo, went dark, and every rescan failed with "already opened".
+  The Companion package is now wrapped with a one-line patch (open timeout
+  30 s); only `dist/main.js` is copied, so nothing is rebuilt, and
+  `--replace-fail` flags the patch if an update changes that code.
 - **Waybar audio switcher.** Left-clicking the volume icon opens a Fuzzel menu of
   every output (local and AirPlay/Sonos) with the current one ticked; picking one
   makes it the default and moves playing streams over. Right-click opens
