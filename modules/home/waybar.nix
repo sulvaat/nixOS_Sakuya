@@ -51,6 +51,61 @@ let
         '
   '';
 
+  # macOS-style output switcher for the volume icon. Clicking it drops a small
+  # Fuzzel menu at the top-right listing every output (local devices and
+  # AirPlay/RAOP sinks such as the Sonos), with the current one ticked. Picking
+  # one makes it the default and moves already-playing streams onto it, so the
+  # switch is immediate. The last entry opens pavucontrol ("Sound Settings…").
+  # Clicking the icon again while the menu is open closes it.
+  audioSwitch =
+    let
+      pactl = "${pkgs.pulseaudio}/bin/pactl"; # client only; talks to pipewire-pulse
+      jq = "${pkgs.jq}/bin/jq";
+    in
+    pkgs.writeShellScript "waybar-audio-switch" ''
+      ${pkgs.procps}/bin/pkill -f -- '--namespace=audio-switch' && exit 0
+
+      default=$(${pactl} get-default-sink)
+      # One TSV row per sink: name, menu label, icon fallback list.
+      rows=$(${pactl} -f json list sinks | ${jq} -r --arg def "$default" '
+        .[]
+        | (.name | test("raop")) as $air
+        | (.description
+            | if test("\\[[^]]+\\]$") and (test("HDMI") or test("DP"))
+              then capture("\\[(?<mon>[^]]+)\\]$").mon + " (HDMI)"  # name the monitor, not the GPU
+              else sub(" Analog Stereo$"; "") | sub(" Pro$"; "")
+              end) as $desc
+        | [ .name,
+            ((if .name == $def then "✓  " else "     " end)
+              + $desc + (if $air then "  · AirPlay" else "" end)),
+            (if $air then "network-wireless,airplay"
+             elif (.name | test("hdmi")) then "video-display,audio-card"
+             else (.properties["device.icon_name"] // "audio-speakers") + ",audio-speakers"
+             end) ]
+        | @tsv')
+
+      names=(); sel=0; i=0
+      while IFS=$'\t' read -r n _ _; do
+        names+=("$n"); [ "$n" = "$default" ] && sel=$i; i=$((i + 1))
+      done <<< "$rows"
+
+      idx=$( { while IFS=$'\t' read -r _ label icon; do
+                 printf '%s\0icon\x1f%s\n' "$label" "$icon"
+               done <<< "$rows"
+               printf '%s\0icon\x1f%s\n' "     Sound Settings…" "preferences-desktop-sound,multimedia-volume-control"
+             } | ${pkgs.fuzzel}/bin/fuzzel --dmenu --index --namespace=audio-switch \
+                   --anchor=top-right --x-margin=12 --y-margin=6 --width=44 \
+                   --minimal-lines --hide-prompt --select-index="$sel" ) || exit 0
+
+      if [ "$idx" -ge "''${#names[@]}" ]; then
+        exec ${pkgs.pavucontrol}/bin/pavucontrol
+      fi
+      target=''${names[$idx]}
+      ${pactl} set-default-sink "$target"
+      ${pactl} -f json list sink-inputs | ${jq} -r '.[].index' \
+        | while read -r s; do ${pactl} move-sink-input "$s" "$target"; done
+    '';
+
   colors = osConfig.lib.stylix.colors.withHashtag;
   slots = [
     "base00" "base01" "base02" "base03" "base04" "base05" "base06" "base07"
@@ -71,6 +126,12 @@ let
       exec = "${swaync}/bin/swaync-client -swb";
       on-click = "${swaync}/bin/swaync-client -t -sw";
       on-click-right = "${swaync}/bin/swaync-client -d -sw";
+    };
+    # Volume icon: left-click = output switcher menu, right-click = full mixer.
+    # (Overrides the plain "pavucontrol" on-click in config.json.)
+    pulseaudio = barData.pulseaudio // {
+      on-click = "${audioSwitch}";
+      on-click-right = "${pkgs.pavucontrol}/bin/pavucontrol";
     };
   };
 in
