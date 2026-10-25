@@ -91,6 +91,14 @@ Handy shell aliases defined in the config:
 
 ## Changelog
 
+### 2026-10-25
+
+- **Flake inputs updated** (nixpkgs 2026-10-23, chaotic-nyx, home-manager, stylix).
+- **Mozc build workaround removed.** The mozc source in this nixpkgs no longer
+  has the leading `::` that `uic` rejected, and nixpkgs' `postPatch` now starts
+  with `cd src`, so the overlay's `sed` failed on a path that no longer
+  existed. Stock fcitx5-mozc builds (and comes from the binary cache) again.
+
 ### 2026-10-24
 
 - **Loupedeck Live via Bitfocus Companion** (`modules/system/loupedeck.nix`).
