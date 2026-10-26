@@ -196,6 +196,21 @@ in
     };
   };
 
+  # Locks the Live's serial port to Companion (Proton opening it as a controlling
+  # terminal hung it up overnight) and rescans if the panel is plugged in but
+  # Companion isn't holding it. Details in ./loupedeck/guard.py.
+  systemd.user.services.loupedeck-guard = {
+    description = "Keep the Loupedeck locked to Companion and reconnect it";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" "bitfocus-companion.service" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.python3}/bin/python3 -I ${./loupedeck/guard.py}";
+      Restart = "always";
+      RestartSec = 3;
+    };
+  };
+
   # Pushes live output levels into Companion for the strip VU meters (see vuFeed).
   systemd.user.services.companion-vu-feed = {
     description = "Feed default-output audio levels into Companion (Loupedeck VU meters)";
