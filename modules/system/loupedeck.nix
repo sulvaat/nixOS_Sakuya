@@ -66,95 +66,13 @@ let
     icon = "input-dialpad";
     categories = [ "AudioVideo" "Utility" ];
   };
-  # VU-meter feed for the Loupedeck side strips. Records the monitor of the
-  # current default output (so it follows the Waybar audio switcher, AirPlay
-  # included), measures each channel's peak ~25x/s, maps -48..0 dBFS to 0..100
-  # with instant attack and smooth release, and pushes the values into the
-  # Companion custom variables `vu_l` / `vu_r` (create those in Companion first;
-  # unknown variables return 404). Only changed values are sent, so silence
-  # costs nothing. `--print` prints levels instead of posting (for testing).
-  vuFeed = pkgs.writeScript "companion-vu-feed" ''
-    #!${pkgs.python3}/bin/python3 -I
-    import array, http.client, math, subprocess, sys, time
-
-    PAREC = "${pkgs.pulseaudio}/bin/parec"
-    PACTL = "${pkgs.pulseaudio}/bin/pactl"
-    RATE, CH, FPS = 48000, 2, 25
-    BLOCK = RATE // FPS * CH * 2          # bytes per frame (s16le stereo)
-    FLOOR_DB = -48.0                       # bottom of the meter
-    RELEASE = 26.0 / FPS / -FLOOR_DB * 100 # fall speed: 26 dB/s, in meter units
-    PRINT = "--print" in sys.argv
-
-    def default_sink():
-        try:
-            return subprocess.run([PACTL, "get-default-sink"], capture_output=True,
-                                  text=True, timeout=2).stdout.strip()
-        except Exception:
-            return ""
-
-    def start_capture(sink):
-        return subprocess.Popen(
-            [PAREC, f"--device={sink}.monitor", "--format=s16le", f"--rate={RATE}",
-             f"--channels={CH}", "--latency-msec=20", "--raw"],
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-
-    conn = None
-    warned = False
-    def post(name, value):
-        global conn, warned
-        if PRINT:
-            return
-        try:
-            if conn is None:
-                conn = http.client.HTTPConnection("127.0.0.1", 8000, timeout=1)
-            conn.request("POST", f"/api/custom-variable/{name}/value?value={value}")
-            resp = conn.getresponse(); resp.read()
-            if resp.status == 404 and not warned:
-                print(f"Companion has no custom variable '{name}' - create vu_l and vu_r", flush=True)
-                warned = True
-        except Exception:
-            conn = None  # Companion not up yet / restarting; retry next frame
-
-    def to_meter(samples):
-        peak = max(max(samples), -min(samples)) if samples else 0
-        if peak <= 0:
-            return 0.0
-        db = 20 * math.log10(peak / 32768)
-        return max(0.0, min(100.0, (db - FLOOR_DB) / -FLOOR_DB * 100))
-
-    level, sent = [0.0, 0.0], [None, None]
-    sink, proc, frame = None, None, 0
-    while True:
-        if frame % FPS == 0:  # once a second: follow default-output changes
-            cur = default_sink()
-            if cur and cur != sink:
-                if proc:
-                    proc.kill(); proc.wait()
-                sink, proc = cur, start_capture(cur)
-        frame += 1
-        data = proc.stdout.read(BLOCK) if proc else b""
-        if len(data) < BLOCK:  # capture died (e.g. pipewire restart): retry
-            if proc:
-                proc.kill(); proc.wait()
-            sink, proc = None, None
-            time.sleep(1); frame = 0
-            continue
-        s = array.array("h", data)
-        for ch, name in ((0, "vu_l"), (1, "vu_r")):
-            level[ch] = max(to_meter(s[ch::CH]), level[ch] - RELEASE)
-            v = round(level[ch])
-            if v != sent[ch]:
-                sent[ch] = v
-                post(name, v)
-        if PRINT:
-            print(f"\r{sink[:40]:40} L {sent[0]:3d} R {sent[1]:3d}", end="", flush=True)
-  '';
   # niri window list + per-window audio for the Live's touch grid (tap = mute,
   # long-press = window-options page). Source: ./loupedeck/niri-deck.py.
   niriDeck = pkgs.writeScriptBin "niri-deck" (builtins.replaceStrings
-    [ "@python@" "@niri@" "@pactl@" "@wpctl@" "@playerctl@" ]
+    [ "@python@" "@niri@" "@pactl@" "@wpctl@" "@playerctl@" "@pwlink@" "@pwmetadata@" ]
     [ "${pkgs.python3}/bin/python3" "${config.programs.niri.package}/bin/niri" "${pkgs.pulseaudio}/bin/pactl"
-      "${pkgs.wireplumber}/bin/wpctl" "${pkgs.playerctl}/bin/playerctl" ]
+      "${pkgs.wireplumber}/bin/wpctl" "${pkgs.playerctl}/bin/playerctl"
+      "${pkgs.pipewire}/bin/pw-link" "${pkgs.pipewire}/bin/pw-metadata" ]
     (builtins.readFile ./loupedeck/niri-deck.py));
 in
 {
@@ -206,19 +124,6 @@ in
     after = [ "graphical-session.target" "bitfocus-companion.service" ];
     serviceConfig = {
       ExecStart = "${pkgs.python3}/bin/python3 -I ${./loupedeck/guard.py}";
-      Restart = "always";
-      RestartSec = 3;
-    };
-  };
-
-  # Pushes live output levels into Companion for the strip VU meters (see vuFeed).
-  systemd.user.services.companion-vu-feed = {
-    description = "Feed default-output audio levels into Companion (Loupedeck VU meters)";
-    wantedBy = [ "graphical-session.target" ];
-    partOf = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" "bitfocus-companion.service" "pipewire-pulse.service" ];
-    serviceConfig = {
-      ExecStart = "${vuFeed}";
       Restart = "always";
       RestartSec = 3;
     };
