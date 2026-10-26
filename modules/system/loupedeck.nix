@@ -15,6 +15,13 @@ let
   # copied and patched; everything else is symlinked, so there's no rebuild.
   # --replace-fail stops the build if an update changes the code, so the patch
   # can be checked (and dropped if upstream fixes it).
+  #
+  # Second patch: nixpkgs makes Companion run every add-on on its own Node 26,
+  # whatever runtime the add-on's manifest asks for. Under Node 26 the serial-port
+  # library's poll handle makes the event loop spin (~26k empty epoll wakeups/s,
+  # 30-100% of a core even with the panel idle; Node 22/24 with the same load:
+  # ~1%). Give add-ons that declare runtime "node22" (the Loupedeck one, and the
+  # built-in Stream Deck / X-keys ones) Node 22, as upstream Companion does.
   companion = pkgs.runCommand "bitfocus-companion-${pkgs.bitfocus-companion.version}-loupedeck" { } ''
     src=${pkgs.bitfocus-companion}
     app=share/bitfocus-companion
@@ -25,6 +32,10 @@ let
     substituteInPlace $out/$app/dist/main.js --replace-fail \
       'sendWithCb("openScannedDevice",{device:e.scannedDeviceInfo,resolvedSurfaceId:r})' \
       'sendWithCb("openScannedDevice",{device:e.scannedDeviceInfo,resolvedSurfaceId:r},void 0,3e4)'
+    node=$(grep -o 'return"/nix/store/[a-z0-9]*-nodejs-[0-9.]*/bin/node"' $out/$app/dist/main.js)
+    [ "$(echo "$node" | wc -l)" = 1 ] && [ -n "$node" ] || { echo "getNodeJsPath patch target not found"; exit 1; }
+    substituteInPlace $out/$app/dist/main.js --replace-fail "$node" \
+      "return t===\"node22\"?\"${pkgs.nodejs_22}/bin/node\":''${node#return}"
     sed "s|$src/$app/dist/main.js|$out/$app/dist/main.js|" $src/bin/bitfocus-companion > $out/bin/bitfocus-companion
     chmod +x $out/bin/bitfocus-companion
     grep -q "$out/$app/dist/main.js" $out/bin/bitfocus-companion
