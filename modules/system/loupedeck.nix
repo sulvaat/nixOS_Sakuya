@@ -174,6 +174,11 @@ in
     partOf = [ "graphical-session.target" ];
     after = [ "graphical-session.target" ];
     serviceConfig = {
+      # Fix the Loupedeck add-on (Companion installs it under ~/.config, so it
+      # can't be patched in the store): reset the panel's stale WebSocket session
+      # before the handshake, release the port on failure, time out lost acks.
+      # Details in the script; it only warns if an add-on update changed the code.
+      ExecStartPre = "${pkgs.python3}/bin/python3 -I ${./loupedeck/patch-addon.py}";
       ExecStart = "${companion}/bin/bitfocus-companion --admin-address 127.0.0.1 --admin-port 8000 --enable-shell-command-support";
       Restart = "on-failure";
       RestartSec = 5;
