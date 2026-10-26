@@ -54,8 +54,10 @@ let
   # macOS-style output switcher for the volume icon. Clicking it drops a small
   # Fuzzel menu at the top-right listing every output (local devices and
   # AirPlay/RAOP sinks such as the Sonos), with the current one ticked. Picking
-  # one makes it the default and moves already-playing streams onto it, so the
-  # switch is immediate. The last entry opens pavucontrol ("Sound Settings…").
+  # one makes it the default; WirePlumber moves every stream that follows the
+  # default at once, and apps pinned to a device (Loupedeck page 4) stay put.
+  # (Moving all streams by hand would pin each one to the new device.)
+  # The last entry opens pavucontrol ("Sound Settings…").
   # Clicking the icon again while the menu is open closes it.
   audioSwitch =
     let
@@ -100,10 +102,7 @@ let
       if [ "$idx" -ge "''${#names[@]}" ]; then
         exec ${pkgs.pavucontrol}/bin/pavucontrol
       fi
-      target=''${names[$idx]}
-      ${pactl} set-default-sink "$target"
-      ${pactl} -f json list sink-inputs | ${jq} -r '.[].index' \
-        | while read -r s; do ${pactl} move-sink-input "$s" "$target"; done
+      ${pactl} set-default-sink "''${names[$idx]}"
     '';
 
   colors = osConfig.lib.stylix.colors.withHashtag;
