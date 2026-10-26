@@ -44,7 +44,8 @@ imports and a few globals.
     │   ├── desktop.nix        #   Niri enable, console login + `desktop` launcher, portals, fonts
     │   ├── input-method.nix   #   fcitx5 + Mozc (Japanese input)
     │   ├── gaming.nix         #   GameMode, Proton-GE, gamescope, mesa-git, LACT, emulators
-    │   ├── loupedeck.nix      #   Loupedeck Live: Companion, VU + niri-deck feeds (docs/loupedeck)
+    │   ├── loupedeck.nix      #   Loupedeck Live: Companion, deck feed, port guard (docs/loupedeck)
+    │   ├── loupedeck/         #   niri-deck.py (deck feed + commands), guard.py, patch-addon.py
     │   ├── stylix.nix         #   theme, wallpaper, fonts
     │   ├── virtualisation.nix #   libvirtd, virt-manager, swtpm (TPM 2.0)
     │   ├── filesystems.nix    #   NFS + btrfs mounts
@@ -91,7 +92,34 @@ Handy shell aliases defined in the config:
 
 ## Changelog
 
+### 2026-10-26
+
+- **Audio routing on the Loupedeck** (pages 3 and 4; [manual](docs/loupedeck/README.md#page-3--audio-outputs-and-mirrors)).
+  Round button 3/3 shows the system output's colour and opens a board of every
+  output device (full name, colour, SYSTEM / AIRPLAY / mirror tags, the apps
+  playing there); tap one to make it the system output. The list is live:
+  devices that come and go (JamesDSP, the PHA-3) take the next key and keep
+  their colour. On page 2, 3/3 shows where the held window's audio goes and
+  opens page 4 to pin that app to a device (or un-pin it), via the stream
+  metadata WirePlumber remembers per app. Page 3's knobs mirror one device to
+  another, Helvum-style: lock source A (red), pick target B, confirm; loops are
+  refused and saved mirrors are re-linked after reboots and replugs.
+- **Waybar audio switcher no longer pins apps.** It moved every stream to the
+  picked device, which made WirePlumber pin each app there; it now only sets
+  the default (WirePlumber moves everything that follows it), so per-app pins
+  survive. Stale pins to a JamesDSP sink were cleared from WirePlumber's state.
+- **Deck feed reads audio on change.** `niri-deck feed` re-reads PipeWire state
+  only when `pactl subscribe` reports a change, instead of every 0.4 s.
+
 ### 2026-10-25
+
+- **Loupedeck kept connected across game launches.** Proton maps every
+  `/dev/ttyACM*` to a COM port; a program running as a session leader that
+  opens the Live's port takes it as its controlling terminal, and when it exits
+  the kernel hangs the port up for Companion too (a Steam update script did
+  this overnight and froze the panel). `loupedeck-guard` sets `TIOCEXCL` on the
+  port once Companion holds it, so other opens fail, and rescans if the panel
+  is plugged in but not connected for 10 s.
 
 - **Flake inputs updated** (nixpkgs 2026-10-23, chaotic-nyx, home-manager, stylix).
 - **Mozc build workaround removed.** The mozc source in this nixpkgs no longer
@@ -129,6 +157,21 @@ Handy shell aliases defined in the config:
   The Companion package is now wrapped with a one-line patch (open timeout
   30 s); only `dist/main.js` is copied, so nothing is rebuilt, and
   `--replace-fail` flags the patch if an update changes that code.
+- **Loupedeck reconnects after a Companion restart.** The Live keeps its
+  WebSocket session when the port closes, so a new handshake was swallowed as
+  frame data and the panel stayed black until power-cycled. A patch applied to
+  Companion's installed Loupedeck add-on before each start
+  (`loupedeck/patch-addon.py`) flushes the panel with 256 KB of zeros before the
+  handshake, closes the port if the handshake fails, and times out lost draw
+  acks (15 s) instead of freezing the panel.
+- **Loupedeck add-on on Node 22.** nixpkgs runs every Companion add-on on Node
+  26, where the serial-port library makes the event loop spin (30-100% of a
+  core with the panel idle). Add-ons that ask for Node 22 now get it (~0.5%).
+- **Strip knob readouts replace the VU meters.** Each LCD strip cell labels and
+  shows the knob beside it (volume / mic with a level bar, play position, grid
+  page, MangoHud preset, track; window width / column / workspace on page 2).
+  The VU feed and its service are gone. Window titles that only animate (a
+  spinner) no longer redraw the whole touch grid every second.
 - **Waybar audio switcher.** Left-clicking the volume icon opens a Fuzzel menu of
   every output (local and AirPlay/Sonos) with the current one ticked; picking one
   makes it the default and moves playing streams over. Right-click opens
